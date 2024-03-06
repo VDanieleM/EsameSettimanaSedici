@@ -24,7 +24,7 @@ $registrationSuccess = $_SESSION['registrationSuccess'] ?? false;
             </div>
             <div class="card-body">
 
-                <!-- Messaggio di errore o di approvazione -->
+                <!-- Messaggio di errore -->
                 <?php if (isset($_SESSION['registrationMessage'])): ?>
                     <div class="alert alert-<?= $_SESSION['registrationMessage']['status']; ?> mt-3">
                         <?= $_SESSION['registrationMessage']['message']; ?>

@@ -49,15 +49,13 @@ function hashPassword($password)
     return password_hash($password, PASSWORD_DEFAULT);
 }
 
-function updateUser($conn, $userId, UserDTO $user)
+function updateUser($conn, $userId, $nome, $email)
 {
     $query = "UPDATE utenti SET nome = :nome, email = :email WHERE id = :userId";
     $stmt = $conn->prepare($query);
-    $nome = $user->getNome();
-    $email = $user->getEmail();
+    $stmt->bindParam(':userId', $userId);
     $stmt->bindParam(':nome', $nome);
     $stmt->bindParam(':email', $email);
-    $stmt->bindParam(':userId', $userId);
     $stmt->execute();
 }
 
@@ -72,7 +70,6 @@ function deleteUser($conn, $userId)
 // Funzione per eseguire l'autenticazione dell'utente
 function authenticateUser(UserDTO $user, $conn)
 {
-    // Verifica se l'utente esiste
     $existingUserQuery = "SELECT * FROM utenti WHERE nome = :nome";
     $existingUserStmt = $conn->prepare($existingUserQuery);
     $nome = $user->getNome();
@@ -93,7 +90,6 @@ function authenticateUser(UserDTO $user, $conn)
 // Funzione per eseguire la registrazione di un nuovo utente
 function registerUser(UserDTO $user, $conn)
 {
-    // Verifica se l'utente esiste già
     $nome = $user->getNome();
     $email = $user->getEmail();
     $existingUserQuery = "SELECT COUNT(*) FROM utenti WHERE nome = :nome OR email = :email";
@@ -107,7 +103,6 @@ function registerUser(UserDTO $user, $conn)
         return ['status' => 'danger', 'message' => "Errore: L'utente con lo stesso nome o email esiste già."];
     }
 
-    // Inserimento dell'utente
     $hashedPassword = hashPassword($user->getPassword());
     $insertUserQuery = "INSERT INTO utenti (nome, password, email) VALUES (:nome, :password, :email)";
     $insertUserStmt = $conn->prepare($insertUserQuery);
@@ -145,12 +140,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['update'])) {
         $userId = $_POST['user_id'];
-        $password = $_POST['password'];
         $nome = $_POST['nome'];
         $email = $_POST['email'];
 
-        $user = new UserDTO($userId, $password, $nome, $email);
-        updateUser($conn, $userId, $user);
+        updateUser($conn, $userId, $nome, $email);
         header('Location: dashboard.php');
         exit();
     }
